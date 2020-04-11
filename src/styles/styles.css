@@ -23,10 +23,10 @@ ol, ul {
 
 .square {
     background: #fff;
-    border: 1px solid #999;
+    border: 1px solid #c5c5c5;
     float: left;
     font-size: 13vw;
-    font-weight: 100 !important;
+    font-weight: 300 !important;
     line-height: 25vw;
     height: 25vw;
     color: #c5c5c5;
@@ -35,6 +35,10 @@ ol, ul {
     padding: 0;
     text-align: center;
     width: 25vw;
+}
+
+.te-my-turn {
+    border: 1px solid #9c9c9c !important;
 }
 
 .square:focus {

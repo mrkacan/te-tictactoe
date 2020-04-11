@@ -1,23 +1,29 @@
 import React from 'react';
 import './styles/styles.css';
-import * as firebase from "firebase/app";
+import firebase from "firebase";
 import Game from "./pages/Game/Game";
 import RegisterUser from "./pages/RegisterUser/RegisterUser";
 import LocalStorage from "./utils/storage";
 import CreateOrJoinRoom from "./pages/CreateOrJoinRoom/CreateOrJoinRoom";
 import UserInfo from "./components/UserInfo";
-import {Spin} from "antd";
+import {message} from "antd";
+import Header from "./components/Header";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDQtpaeFhvUUeUtUUxA4xlDaEzDiSo7fHc",
-    authDomain: "te-tictactoe.firebaseapp.com",
-    databaseURL: "https://te-tictactoe.firebaseio.com",
-    projectId: "te-tictactoe",
-    storageBucket: "te-tictactoe.appspot.com",
-    messagingSenderId: "478023561910",
-    appId: "1:478023561910:web:81e0297885e6397316ec17",
-    measurementId: "G-LB8CWZC46J"
-};
+const defaultGameState = {
+    X: '',
+    O: '',
+    ownerId: '',
+    otherPlayerId: '',
+    Winner: '',
+    ownerWin: 0,
+    otherPlayerWin: 0,
+    nextPlayer: '',
+    history: new Array(9).fill(null),
+    stepNumber: 0,
+    xIsNext: true,
+    xWantPlay: true,
+    yWantPlay: true,
+}
 
 class App extends React.Component {
     constructor(props) {
@@ -26,13 +32,15 @@ class App extends React.Component {
             isRegistered: false,
             currentUserId: null,
             currentRoom: null,
-            gameConfig: null,
-            isLoading: true
+            gameConfig: {
+                ...defaultGameState
+            },
+            isLoading: true,
+            appIsRunning: false
         }
     }
 
     componentDidMount() {
-        firebase.initializeApp(firebaseConfig);
         setTimeout(function () {
             this.checkUser()
         }.bind(this), 1500)
@@ -47,11 +55,6 @@ class App extends React.Component {
     }
 
     checkUser = () => {
-
-
-        //TODO: check user on firebase if not exist create if yes login!
-
-
         LocalStorage.getItem('userId').then((currentUserId) => {
             LocalStorage.getItem('currentRoom').then((currentRoom) => {
                 if (currentUserId) {
@@ -62,30 +65,90 @@ class App extends React.Component {
                     })
                 }
 
+                if (currentRoom && currentUserId) {
+                    this.runGameListeners()
+                }
+
                 this.setState({
                     isLoading: false
                 })
             })
+        })
+    }
 
+    registerUser = (currentUserId) => {
+        this.setState({
+            isLoading: true
+        })
+        firebase.database().ref(`users/${currentUserId}`).once('value', (snapshot) => {
+            let val = snapshot.val()
+
+            if (!val) {
+                firebase.database().ref(`users/${currentUserId}`).update({
+                    userActive: true
+                }).then(() => {
+                    LocalStorage.setItem('userId', currentUserId).then(() => {
+                        this.setState({
+                            currentUserId,
+                            isRegistered: true,
+                            currentRoom: null,
+                            isLoading: false
+                        })
+                    })
+                })
+            } else {
+                message.error('This user already exist. Please try with other username')
+                this.setState({
+                    isLoading: false,
+                })
+            }
         })
     }
 
     checkRoom = (currentRoom) => {
+        const {currentUserId} = this.state
 
+        this.setState({
+            isLoading: true
+        })
 
-        //TODO: check room on firebase if not exist create if yes exist join!
-
-
-        LocalStorage.setItem('currentRoom', currentRoom).then(() => {
-            if (currentRoom) {
-                this.setState({
-                    currentRoom,
-                })
+        firebase.database().ref(`rooms/${currentRoom}`).once('value', (snapshot) => {
+            let val = snapshot.val()
+            const gameConfigDefault = {
+                ...defaultGameState,
+                X: currentUserId,
+                ownerId: currentUserId,
+                nextPlayer: currentUserId
             }
 
-            this.setState({
-                isLoading: false
-            })
+            if (!val) {
+                firebase.database().ref(`rooms/${currentRoom}`).update(gameConfigDefault).then(() => {
+                    LocalStorage.setItem('currentRoom', currentRoom).then(() => {
+                        this.setState({
+                            currentRoom,
+                            gameConfig: gameConfigDefault,
+                            isLoading: false,
+                        })
+                        message.info('Room successfully created. Share your codes for join.\n' + `Your code: ${currentRoom}`)
+                    })
+                })
+            } else {
+                firebase.database().ref(`rooms/${currentRoom}`).once('value', (gameConfig) => {
+                    firebase.database().ref(`rooms/${currentRoom}`).update({
+                        otherPlayerId: currentUserId,
+                        O: currentUserId
+                    }).then(()=> {
+                        LocalStorage.setItem('currentRoom', currentRoom).then(() => {
+                            this.setState({
+                                currentRoom,
+                                gameConfig,
+                                isLoading: false,
+                            })
+                            message.success('Successfully joined.')
+                        })
+                    })
+                })
+            }
         })
     }
 
@@ -102,6 +165,74 @@ class App extends React.Component {
         })
     }
 
+    runGameListeners = () => {
+        LocalStorage.getItem('userId').then((currentUserId) => {
+            LocalStorage.getItem('currentRoom').then((currentRoom) => {
+                if (currentUserId && currentRoom) {
+                    this.setState({
+                        currentUserId,
+                        isRegistered: true,
+                        currentRoom,
+                    })
+
+                    firebase.database().ref(`rooms/${currentRoom}`).once('value', (gameConfigSnapshot) => {
+                        const gameConfig = gameConfigSnapshot.val()
+
+                        this.setState(prevState => ({
+                            ...prevState,
+                            gameConfig: {
+                                ...prevState.gameConfig,
+                                ...gameConfig,
+                                history: (gameConfig.history ? gameConfig.history : new Array(9).fill(null))
+                            }
+                        }))
+                    })
+
+                    firebase.database().ref(`rooms/${currentRoom}`).on('child_changed', (gameConfigSnapshot) => {
+                        const gameConfig = gameConfigSnapshot
+
+                        this.setState(prevState => ({
+                            ...prevState,
+                            gameConfig: {
+                                ...prevState.gameConfig,
+                                [gameConfig.key]: gameConfig.val()
+                            }
+                        }))
+                    })
+
+                    firebase.database().ref(`rooms/${currentRoom}`).on('child_added', (gameConfigSnapshot) => {
+                        const gameConfig = gameConfigSnapshot
+
+                        this.setState(prevState => ({
+                            ...prevState,
+                            gameConfig: {
+                                ...prevState.gameConfig,
+                                [gameConfig.key]: gameConfig.val()
+                            }
+                        }))
+                    })
+
+                    firebase.database().ref(`rooms/${currentRoom}/history`).on('child_removed', (gameConfigSnapshot) => {
+
+                        this.setState(prevState => ({
+                            ...prevState,
+                            gameConfig: {
+                                ...prevState.gameConfig,
+                                history: []
+                            }
+                        }))
+                    })
+
+                }
+            })
+        })
+    }
+
+    updateGame = (willDispatchObject) => {
+        const {currentRoom} = this.state
+
+        firebase.database().ref(`rooms/${currentRoom}`).update(willDispatchObject)
+    }
 
     render() {
         const {
@@ -113,14 +244,12 @@ class App extends React.Component {
             isLoading
         } = this.state;
 
-        console.log('this.state', this.state)
-
         if (isLoading) {
-            return <Spin/>
+            return <Header isLoading={isLoading}/>
         }
 
         if (!isRegistered) {
-            return <RegisterUser checkUser={this.checkUser}/>
+            return <RegisterUser checkUser={this.registerUser}/>
         }
 
 
@@ -147,6 +276,8 @@ class App extends React.Component {
                     currentUserId={currentUserId}
                     roomId={roomId}
                     gameConfig={gameConfig}
+                    isRoomOwner={gameConfig && gameConfig.ownerId === currentUserId}
+                    updateGame={this.updateGame}
                 />
             </>
         );

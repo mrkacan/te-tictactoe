@@ -15,7 +15,7 @@ function UserInfo({currentUserId, logout, currentRoom}) {
                     </div>
                     {currentRoom ?
                     <div className="te-active-user ml-2">
-                        {'room: ' + currentRoom}
+                        {'room code: ' + currentRoom}
                     </div>: null}
                 </div>
             </div>

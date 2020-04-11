@@ -6,10 +6,7 @@ import Header from "../../components/Header";
 function RegisterUser({checkUser}) {
     const [userId, setUserId] = useState('');
     const onRegisterPress = () => {
-        LocalStorage.setItem('userId', userId).then(() => {
-            checkUser()
-        })
-
+            checkUser(userId)
     }
 
 
