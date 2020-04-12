@@ -145,7 +145,7 @@ class Game extends React.Component {
 
     isGameFineshed = () => {
 
-        return false
+        return true
     }
 
     getRandomPlayer = () => {
