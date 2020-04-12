@@ -26,18 +26,20 @@ class Game extends React.Component {
     }
 
     static getDerivedStateFromProps(props, state) {
-        const {gameConfig: {history}, updateGame, xWantPlay, yWantPlay} = props
-        const newGameConfig = {...props.gameConfig}
+        const {gameConfig: {history}, updateGame, gameConfig, yWantPlay} = props
 
-        const winner = calculateWinner(history);
-        if (!!winner) {
-            updateGame({
-                xWantPlay: false,
-                yWantPlay: false
-            })
+        if(gameConfig && history){
+            const winner = calculateWinner(history);
+            if (!!winner) {
+                updateGame({
+                    xWantPlay: false,
+                    yWantPlay: false
+                })
+            }
         }
 
-        return newGameConfig
+        console.log('props.gameConfig',props.gameConfig)
+        return {...props.gameConfig}
     }
 
     componentDidMount() {
@@ -90,13 +92,18 @@ class Game extends React.Component {
         const {gameConfig: {ownerId, otherPlayerId}} = this.props;
         let otherPlayer = ''
 
-        if (currentUserId !== ownerId) {
+        if (currentUserId === ownerId) {
+            otherPlayer = otherPlayerId
+        }
+
+        if (currentUserId === otherPlayerId) {
             otherPlayer = ownerId
         }
 
-        if (currentUserId !== otherPlayerId) {
-            otherPlayer = otherPlayerId
-        }
+console.log('ownerId',ownerId)
+console.log('otherPlayerId',otherPlayerId)
+console.log('currentUserId',currentUserId)
+
 
         return otherPlayer
     }
@@ -115,9 +122,8 @@ class Game extends React.Component {
     }
 
     isGameFineshed = () => {
-        const { history } = this.state
 
-        return history.length === 9
+        return false
     }
 
     render() {

@@ -133,7 +133,7 @@ class App extends React.Component {
                     })
                 })
             } else {
-                firebase.database().ref(`rooms/${currentRoom}`).once('value', (gameConfig) => {
+                firebase.database().ref(`rooms/${currentRoom}`).once('value', (gameConfigSnapshot) => {
                     firebase.database().ref(`rooms/${currentRoom}`).update({
                         otherPlayerId: currentUserId,
                         O: currentUserId
@@ -141,7 +141,7 @@ class App extends React.Component {
                         LocalStorage.setItem('currentRoom', currentRoom).then(() => {
                             this.setState({
                                 currentRoom,
-                                gameConfig,
+                                gameConfig:gameConfigSnapshot.val(),
                                 isLoading: false,
                             })
                             message.success('Successfully joined.')
@@ -190,7 +190,7 @@ class App extends React.Component {
 
                     firebase.database().ref(`rooms/${currentRoom}`).on('child_changed', (gameConfigSnapshot) => {
                         const gameConfig = gameConfigSnapshot
-
+                        console.log('gameConfig',gameConfig)
                         this.setState(prevState => ({
                             ...prevState,
                             gameConfig: {
