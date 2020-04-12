@@ -145,7 +145,7 @@ class Game extends React.Component {
 
     isGameFineshed = () => {
 
-        return true
+        return false
     }
 
     getRandomPlayer = () => {
@@ -235,7 +235,7 @@ class Game extends React.Component {
                     }
                 </div>
                 {
-                    isItMyRoom && isGameFineshed &&
+                    isItMyRoom &&
                     <Button
                         type="primary"
                         className="te-start-again-button"
