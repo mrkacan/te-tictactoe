@@ -1,5 +1,6 @@
 import React from 'react';
 import Square from "./Square";
+import {Spin} from "antd";
 
 class Board extends React.Component {
     renderSquare(i) {
@@ -13,8 +14,15 @@ class Board extends React.Component {
     }
 
     render() {
+        const {isLoading} = this.props;
+
         return (
-            <div>
+            <div className={`${isLoading ? 'board-loading' : ''}`}>
+                {
+                    isLoading && <div className="board-spinner">
+                        <Spin/>
+                    </div>
+                }
                 <div className="board-row">
                     {this.renderSquare(0)}
                     {this.renderSquare(1)}

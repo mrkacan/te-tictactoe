@@ -63,6 +63,19 @@ ol, ul {
 .game-board {
 
 }
+
+.board-loading {
+    opacity: 0.5;
+    position: relative;
+}
+
+.board-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 .site-layout-content {
     background: #fff;
     padding: 24px;
@@ -158,4 +171,28 @@ html, body {
     width: 100%;
     text-align: center;
     padding-bottom: 40px;
+}
+
+.te-stats {
+    border: 1px solid #90b6cf;
+    background-color: #eaeaea;
+    margin: 20px;
+    padding: 10px;
+    width:100%;
+}
+
+.te-winner-stat-title {
+    font-size: 4vw;
+    height: 6vw;
+}
+
+.te-win-stat {
+    font-size: 4vw;
+    height: 6vw;
+    font-weight: bold;
+}
+
+.te-start-again-button {
+    position:absolute;
+    bottom:-7.2vh;
 }

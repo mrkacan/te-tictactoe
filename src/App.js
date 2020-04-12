@@ -130,6 +130,7 @@ class App extends React.Component {
                             isLoading: false,
                         })
                         message.info('Room successfully created. Share your codes for join.\n' + `Your code: ${currentRoom}`)
+                        this.runGameListeners()
                     })
                 })
             } else {
@@ -144,6 +145,7 @@ class App extends React.Component {
                                 gameConfig:gameConfigSnapshot.val(),
                                 isLoading: false,
                             })
+                            this.runGameListeners()
                             message.success('Successfully joined.')
                         })
                     })
@@ -175,7 +177,7 @@ class App extends React.Component {
                         currentRoom,
                     })
 
-                    firebase.database().ref(`rooms/${currentRoom}`).once('value', (gameConfigSnapshot) => {
+                    firebase.database().ref(`rooms/${Number(currentRoom)}`).once('value', (gameConfigSnapshot) => {
                         const gameConfig = gameConfigSnapshot.val()
 
                         this.setState(prevState => ({
@@ -188,7 +190,7 @@ class App extends React.Component {
                         }))
                     })
 
-                    firebase.database().ref(`rooms/${currentRoom}`).on('child_changed', (gameConfigSnapshot) => {
+                    firebase.database().ref(`rooms/${Number(currentRoom)}`).on('child_changed', (gameConfigSnapshot) => {
                         const gameConfig = gameConfigSnapshot
                         console.log('gameConfig',gameConfig)
                         this.setState(prevState => ({
@@ -200,7 +202,7 @@ class App extends React.Component {
                         }))
                     })
 
-                    firebase.database().ref(`rooms/${currentRoom}`).on('child_added', (gameConfigSnapshot) => {
+                    firebase.database().ref(`rooms/${Number(currentRoom)}`).on('child_added', (gameConfigSnapshot) => {
                         const gameConfig = gameConfigSnapshot
 
                         this.setState(prevState => ({
@@ -212,7 +214,7 @@ class App extends React.Component {
                         }))
                     })
 
-                    firebase.database().ref(`rooms/${currentRoom}/history`).on('child_removed', (gameConfigSnapshot) => {
+                    firebase.database().ref(`rooms/${Number(currentRoom)}/history`).on('child_removed', (gameConfigSnapshot) => {
 
                         this.setState(prevState => ({
                             ...prevState,
@@ -231,7 +233,7 @@ class App extends React.Component {
     updateGame = (willDispatchObject) => {
         const {currentRoom} = this.state
 
-        firebase.database().ref(`rooms/${currentRoom}`).update(willDispatchObject)
+        firebase.database().ref(`rooms/${Number(currentRoom)}`).update(willDispatchObject)
     }
 
     render() {

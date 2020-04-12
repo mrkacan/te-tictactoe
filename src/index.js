@@ -23,7 +23,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 ReactDOM.render(
-    <React.StrictMode>
+    <>
         <Layout className="layout te-game-layout">
             <Content className="te-game-content">
                 <div className="site-layout-content">
@@ -31,7 +31,7 @@ ReactDOM.render(
                 </div>
             </Content>
         </Layout>
-    </React.StrictMode>,
+    </>,
     document.getElementById('root')
 );
 
