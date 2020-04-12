@@ -1,4 +1,10 @@
-export function calculateWinner(squares) {
+export function calculateWinner(newSquares) {
+
+    let squares = newSquares && newSquares.length ? newSquares.map((i)=> {
+        return i ? i : null
+    }) : newSquares
+
+
     const lines = [
         [0, 1, 2],
         [3, 4, 5],

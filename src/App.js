@@ -23,6 +23,7 @@ const defaultGameState = {
     xIsNext: true,
     xWantPlay: true,
     yWantPlay: true,
+    isLoading: true
 }
 
 class App extends React.Component {
@@ -118,7 +119,8 @@ class App extends React.Component {
                 ...defaultGameState,
                 X: currentUserId,
                 ownerId: currentUserId,
-                nextPlayer: currentUserId
+                nextPlayer: currentUserId,
+                isLoading: true
             }
 
             if (!val) {
@@ -137,7 +139,8 @@ class App extends React.Component {
                 firebase.database().ref(`rooms/${currentRoom}`).once('value', (gameConfigSnapshot) => {
                     firebase.database().ref(`rooms/${currentRoom}`).update({
                         otherPlayerId: currentUserId,
-                        O: currentUserId
+                        O: currentUserId,
+                        isLoading: false,
                     }).then(()=> {
                         LocalStorage.setItem('currentRoom', currentRoom).then(() => {
                             this.setState({

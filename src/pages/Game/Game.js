@@ -20,24 +20,24 @@ class Game extends React.Component {
             history: new Array(9).fill(null),
             stepNumber: 0,
             xIsNext: true,
-            isLoading: false,
+            isLoading: true,
             xWantPlay: true,
-            yWantPlay: true
+            yWantPlay: true,
         };
     }
 
     static getDerivedStateFromProps(props, state) {
         const {gameConfig: {history}, updateGame, gameConfig, yWantPlay} = props
 
-        if (gameConfig && history) {
-            const winner = calculateWinner(history);
-            if (!!winner) {
-                updateGame({
-                    xWantPlay: false,
-                    yWantPlay: false
-                })
-            }
-        }
+        // if (gameConfig && history) {
+        //     const winner = calculateWinner(history);
+        //     if (!!winner) {
+        //         updateGame({
+        //             xWantPlay: false,
+        //             yWantPlay: false
+        //         })
+        //     }
+        // }
 
         console.log('props.gameConfig', props.gameConfig)
         return {
@@ -86,11 +86,26 @@ class Game extends React.Component {
             updateGame({
                 [willIncreaseCountPlayer]: gameConfig[willIncreaseCountPlayer] + 1
             })
-            Modal.success({
-                content: 'you are winner!',
-                centered: true,
-                maskClosable: true
-            });
+        }
+
+        console.log('calculateWinner(newSquares)',!!calculateWinner(newSquares))
+        if(this.isGameFineshed() || !!calculateWinner(newSquares)){
+            setTimeout(()=> {
+
+                this.setState({
+                    isLoading: true
+                })
+                updateGame({
+                    isLoading: true
+                })
+
+                setTimeout(()=> {
+                    updateGame({
+                        history: [],
+                        nextPlayer: this.getRandomPlayer()
+                    })
+                },1500)
+            },2000)
         }
     }
 
@@ -144,6 +159,13 @@ class Game extends React.Component {
     }
 
     isGameFineshed = () => {
+        const {history} = this.state
+
+        let newHistory =  (history && history.length) ? history.filter(i=> i) : []
+
+        if(newHistory && newHistory.length === 9){
+            return true
+        }
 
         return false
     }
@@ -156,6 +178,21 @@ class Game extends React.Component {
         return isZeroOrOne === 1 ? currentUserId : otherPlayer
     }
 
+    checkAllSquareIsNull = () => {
+        const {history} = this.state
+        let allOfNull = true
+
+        if(history){
+            history.forEach(i=> {
+                if(allOfNull && i){
+                    allOfNull = false
+                }
+            })
+        }
+
+        return !allOfNull
+    }
+
     render() {
         const {isLoading, history, ownerWin, otherPlayerWin, ownerId, otherPlayerId} = this.state
         const {gameConfig, currentUserId, roomId, updateGame} = this.props
@@ -164,8 +201,12 @@ class Game extends React.Component {
         const isMyTurn = this.isMyTurn()
         const isItMyRoom = this.isItMyRoom()
         const nextPlayer = this.getNextPlayer()
-        const isGameFineshed = winner || this.isGameFineshed()
+        const isGameFineshed = winner || (this.isGameFineshed() && this.checkAllSquareIsNull())
         const canPlay = !!(ownerId && otherPlayerId)
+
+        console.log('winner',winner)
+        console.log('history',history)
+        console.log('this.isGameFineshed()',this.isGameFineshed())
 
         if (!gameConfig) {
             return <Header isLoading={true}/>
@@ -182,6 +223,8 @@ class Game extends React.Component {
             status = "Game has finished. Waiting for room owner for start game."
         }
 
+        const gameLoading = isLoading || !canPlay
+
         return (
             <>
                 <audio ref={(click) => {
@@ -196,7 +239,7 @@ class Game extends React.Component {
                             squares={history}
                             onClick={i => !isLoading && canPlay && this.handleClick(i)}
                             isMyTurn={isMyTurn}
-                            isLoading={isLoading || !canPlay}
+                            isLoading={gameLoading}
                         />
                     </div>
                 </div>
@@ -222,11 +265,9 @@ class Game extends React.Component {
                         </div>
                     </div>
                 </div>
-                {!isGameFineshed &&
                 <h3 className="m-4 text-center">
-                    {isMyTurn ? 'Your Turn!' : 'Waiting opponent.'}
+                    {isGameFineshed ? 'Game completed' : isMyTurn ? 'Your Turn!' : 'Waiting opponent.'}
                 </h3>
-                }
                 <div className="mt-2 mb-2 text-center">
                     {
                         winner && <h3>
@@ -234,19 +275,19 @@ class Game extends React.Component {
                         </h3>
                     }
                 </div>
-                {
-                    isItMyRoom &&
-                    <Button
-                        type="primary"
-                        className="te-start-again-button"
-                        block={true}
-                        onClick={() => updateGame({
-                        history: [],
-                        nextPlayer: this.getRandomPlayer()
-                    })}>
-                        Start Again
-                    </Button>
-                }
+                {/*{*/}
+                {/*    isItMyRoom && isGameFineshed &&*/}
+                {/*    <Button*/}
+                {/*        type="primary"*/}
+                {/*        className="te-start-again-button"*/}
+                {/*        block={true}*/}
+                {/*        onClick={() => updateGame({*/}
+                {/*        history: [],*/}
+                {/*        nextPlayer: this.getRandomPlayer()*/}
+                {/*    })}>*/}
+                {/*        Start Again*/}
+                {/*    </Button>*/}
+                {/*}*/}
             </>
         );
     }
