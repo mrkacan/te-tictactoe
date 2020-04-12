@@ -227,7 +227,7 @@ class Game extends React.Component {
                     {isMyTurn ? 'Your Turn!' : 'Waiting opponent.'}
                 </h3>
                 }
-                <div className="m-4 text-center">
+                <div className="mt-2 mb-2 text-center">
                     {
                         winner && <h3>
                             {`WINNER ${this.getWinnerName(winner)}!`}

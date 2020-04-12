@@ -1,6 +1,6 @@
 body {
     font: 14px "Century Gothic", Futura, sans-serif;
-    margin: 20px;
+    margin: 0px !important;
 }
 
 ol, ul {
@@ -193,6 +193,5 @@ html, body {
 }
 
 .te-start-again-button {
-    position:absolute;
-    bottom:-7.2vh;
+    top: 1vh;
 }
