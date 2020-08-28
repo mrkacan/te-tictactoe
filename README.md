@@ -1,4 +1,8 @@
-### TE - Tic Tac Toe React App
+# TE - Tic Tac Toe React App
+> First prototype of Tic Tac Toe App
+ 
+
+## TODO:
 
 - [x] First prototype of working version.
 - [ ] Code cleaning.
