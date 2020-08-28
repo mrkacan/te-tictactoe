@@ -9,5 +9,5 @@
 - [ ] Code refactoring.
 - [ ] Tablets and bigger then tablets devices support.
 
-
+-----
 Made with ❤️
