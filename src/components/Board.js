@@ -1,46 +1,68 @@
 import React from 'react';
-import Square from "./Square";
-import {Spin} from "antd";
+import { Spin } from 'antd';
+import PropTypes from 'prop-types';
+import { _noop } from 'lodash';
+import classNames from 'classnames';
+import Square from './Square';
 
-class Board extends React.Component {
-    renderSquare(i) {
-        return (
-            <Square
-                isMyTurn={this.props.isMyTurn}
-                value={this.props.squares[i]}
-                onClick={() => this.props.onClick(i)}
-            />
-        );
+const Board = ({
+  onClick,
+  squares,
+  isMyTurn,
+  isLoading,
+}) => {
+  const renderSquare = (index) => (
+    <Square
+      isMyTurn={isMyTurn}
+      value={squares[index]}
+      onClick={() => onClick(index)}
+    />
+  );
+
+  const isLoadingClassNames = classNames({
+    'board-loading': isLoading,
+  });
+
+  return (
+    <div className={isLoadingClassNames}>
+      {
+                isLoading && (
+                <div className="board-spinner">
+                  <Spin />
+                </div>
+                )
     }
+      <div className="board-row">
+        {renderSquare(0)}
+        {renderSquare(1)}
+        {renderSquare(2)}
+      </div>
+      <div className="board-row">
+        {renderSquare(3)}
+        {renderSquare(4)}
+        {renderSquare(5)}
+      </div>
+      <div className="board-row">
+        {renderSquare(6)}
+        {renderSquare(7)}
+        {renderSquare(8)}
+      </div>
+    </div>
+  );
+};
 
-    render() {
-        const {isLoading} = this.props;
+Board.propTypes = {
+  onClick: PropTypes.func,
+  squares: PropTypes.array,
+  isMyTurn: PropTypes.bool,
+  isLoading: PropTypes.bool,
+};
 
-        return (
-            <div className={`${isLoading ? 'board-loading' : ''}`}>
-                {
-                    isLoading && <div className="board-spinner">
-                        <Spin/>
-                    </div>
-                }
-                <div className="board-row">
-                    {this.renderSquare(0)}
-                    {this.renderSquare(1)}
-                    {this.renderSquare(2)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(3)}
-                    {this.renderSquare(4)}
-                    {this.renderSquare(5)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(6)}
-                    {this.renderSquare(7)}
-                    {this.renderSquare(8)}
-                </div>
-            </div>
-        );
-    }
-}
+Board.defaultProps = {
+  onClick: _noop,
+  squares: [],
+  isMyTurn: false,
+  isLoading: true,
+};
 
 export default Board;

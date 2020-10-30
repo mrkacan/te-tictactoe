@@ -1,33 +1,58 @@
 import React from 'react';
 import posed from 'react-pose';
+import PropTypes from 'prop-types';
+import { _noop } from 'lodash';
+import classNames from 'classnames';
 
 const Box = posed.div({
-    hidden: {
-        scale: 0,
-        opacity: 0
+  hidden: {
+    scale: 0,
+    opacity: 0,
+  },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      opacity: { ease: 'easeOut', duration: 300 },
+      default: { ease: 'linear', duration: 500 },
     },
-    visible: {
-        scale: 1,
-        opacity: 1,
-        transition: {
-            opacity: { ease: 'easeOut', duration: 300 },
-            default: { ease: 'linear', duration: 500 }
-        }
-    }
+  },
 });
 
-function Square(props) {
-    return (
-            <button
+const Square = ({
+  onClick,
+  isMyTurn,
+  value,
 
-                className={`square ${props.isMyTurn ? 'te-my-turn' : ''}`} onClick={props.onClick}>
-                <Box
-                    pose={(props.value === 'X' || props.value === 'O') ? 'visible' : 'hidden'}
-                >
-                    {props.value}
-                </Box>
-            </button>
-    );
-}
+}) => {
+  const buttonClassNames = classNames({
+    square: true,
+    'te-my-turn': isMyTurn,
+  });
+  return (
+    <button
+      className={buttonClassNames}
+      onClick={onClick}
+    >
+      <Box
+        pose={(value === 'X' || value === 'O') ? 'visible' : 'hidden'}
+      >
+        {value}
+      </Box>
+    </button>
+  );
+};
+
+Square.propTypes = {
+  onClick: PropTypes.func,
+  isMyTurn: PropTypes.bool,
+  value: PropTypes.string,
+};
+
+Square.defaultProps = {
+  onClick: _noop,
+  isMyTurn: false,
+  value: '',
+};
 
 export default Square;

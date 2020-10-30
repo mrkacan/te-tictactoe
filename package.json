@@ -10,8 +10,11 @@
     "@testing-library/user-event": "^7.1.2",
     "antd": "^4.1.2",
     "bootstrap": "^4.4.1",
+    "classnames": "^2.2.6",
     "firebase": "^7.14.0",
     "gh-pages": "^2.2.0",
+    "lodash": "^4.17.20",
+    "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-pose": "^4.0.10",
@@ -39,5 +42,24 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@abhijithvijayan/eslint-config": "2.5.6",
+    "@abhijithvijayan/eslint-config-airbnb": "^1.0.2",
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/parser": "^4.4.1",
+    "babel-eslint": "^10.1.0",
+    "babel-plugin-jsx-control-statements": "^4.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-config-prettier": "^6.13.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-jsx-control-statements": "2.2.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-react": "^7.21.4",
+    "eslint-plugin-react-hooks": "^4.1.2",
+    "prettier": "^2.1.2"
   }
 }
