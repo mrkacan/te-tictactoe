@@ -2,12 +2,14 @@ import React from 'react';
 import './styles/styles.css';
 import firebase from 'firebase';
 import { message } from 'antd';
+import { isEmpty } from 'lodash';
 import Game from './pages/Game/Game';
 import RegisterUser from './pages/RegisterUser/RegisterUser';
 import LocalStorage from './utils/storage';
 import CreateOrJoinRoom from './pages/CreateOrJoinRoom/CreateOrJoinRoom';
 import UserInfo from './components/UserInfo';
 import Header from './components/Header';
+import gameManager from './utils/managers/gameManager';
 
 const defaultGameState = {
   X: '',
@@ -41,10 +43,8 @@ class App extends React.Component {
     };
   }
 
-  componentDidMount() {
-    setTimeout(() => {
-      this.checkUser();
-    }, 1500);
+  async componentDidMount() {
+    await this.checkUser();
 
     window.addEventListener('resize', () => {
       // We execute the same script as before
@@ -53,26 +53,23 @@ class App extends React.Component {
     });
   }
 
-    checkUser = () => {
-      LocalStorage.getItem('userId').then((currentUserId) => {
-        LocalStorage.getItem('currentRoom').then((currentRoom) => {
-          if (currentUserId) {
-            this.setState({
-              currentUserId,
-              isRegistered: true,
-              currentRoom,
-            });
-          }
+    checkUser = async () => {
+      const currentUserId = await gameManager.getUserId();
+      const currentRoom = await gameManager.getCurrentRoomId();
 
-          if (currentRoom && currentUserId) {
-            this.runGameListeners();
-          }
-
-          this.setState({
-            isLoading: false,
-          });
+      if (currentUserId) {
+        this.setState({
+          currentUserId,
+          isRegistered: true,
+          currentRoom,
         });
-      });
+      }
+
+      if (currentRoom && currentUserId) {
+        this.runGameListeners();
+      }
+
+      this.setGameLoaderVisibility(false);
     }
 
     registerUser = (currentUserId) => {
@@ -104,133 +101,131 @@ class App extends React.Component {
       });
     }
 
-    checkRoom = (currentRoom) => {
+    checkRoom = async (currentRoom) => {
       const { currentUserId } = this.state;
 
-      this.setState({
+      this.setGameLoaderVisibility(true);
+
+      const databaseSnapshot = await firebase.database().ref(`rooms/${currentRoom}`).once('value', (snapshot) => snapshot);
+      const databaseSnapshotValue = databaseSnapshot.val();
+      const isRoomCreated = !isEmpty(databaseSnapshotValue);
+
+      const gameConfigDefault = {
+        ...defaultGameState,
+        X: currentUserId,
+        ownerId: currentUserId,
+        nextPlayer: currentUserId,
         isLoading: true,
-      });
+      };
 
-      firebase.database().ref(`rooms/${currentRoom}`).once('value', (snapshot) => {
-        const val = snapshot.val();
-        const gameConfigDefault = {
-          ...defaultGameState,
-          X: currentUserId,
-          ownerId: currentUserId,
-          nextPlayer: currentUserId,
-          isLoading: true,
-        };
-
-        if (!val) {
-          firebase.database().ref(`rooms/${currentRoom}`).update(gameConfigDefault).then(() => {
-            LocalStorage.setItem('currentRoom', currentRoom).then(() => {
-              this.setState({
-                currentRoom,
-                gameConfig: gameConfigDefault,
-                isLoading: false,
-              });
-              message.info('Room successfully created. Share your codes for join.\n' + `Your code: ${currentRoom}`);
-              this.runGameListeners();
-            });
-          });
-        } else {
-          firebase.database().ref(`rooms/${currentRoom}`).once('value', (gameConfigSnapshot) => {
-            firebase.database().ref(`rooms/${currentRoom}`).update({
-              otherPlayerId: currentUserId,
-              O: currentUserId,
-              isLoading: false,
-            }).then(() => {
-              LocalStorage.setItem('currentRoom', currentRoom).then(() => {
-                this.setState({
-                  currentRoom,
-                  gameConfig: gameConfigSnapshot.val(),
-                  isLoading: false,
-                });
-                this.runGameListeners();
-                message.success('Successfully joined.');
-              });
-            });
-          });
-        }
-      });
-    }
-
-    logout = () => {
-      LocalStorage.removeItem('userId').then(() => {
-        LocalStorage.removeItem('currentRoom').then(() => {
-          this.setState({
-            currentUserId: null,
-            isRegistered: false,
-            currentRoom: null,
-          });
+      if (!isRoomCreated) {
+        await firebase.database().ref(`rooms/${currentRoom}`).update(gameConfigDefault);
+        await gameManager.setCurrentRoomId(currentRoom);
+        this.setState({
+          currentRoom,
+          gameConfig: gameConfigDefault,
         });
-      });
-    }
+        this.setGameLoaderVisibility(false);
+        message.info(`Room successfully created. Share your codes for join.\nYour code: ${currentRoom} `);
+        this.runGameListeners();
+      } else {
+        const gameConfigSnapshot = await firebase.database().ref(`rooms/${currentRoom}`).once('value', (snapshot) => snapshot.val());
 
-    runGameListeners = () => {
-      LocalStorage.getItem('userId').then((currentUserId) => {
-        LocalStorage.getItem('currentRoom').then((currentRoom) => {
-          if (currentUserId && currentRoom) {
-            this.setState({
-              currentUserId,
-              isRegistered: true,
-              currentRoom,
-            });
-
-            firebase.database().ref(`rooms/${Number(currentRoom)}`).once('value', (gameConfigSnapshot) => {
-              const gameConfig = gameConfigSnapshot.val();
-
-              this.setState(prevState => ({
-                ...prevState,
-                gameConfig: {
-                  ...prevState.gameConfig,
-                  ...gameConfig,
-                  history: (gameConfig.history ? gameConfig.history : new Array(9).fill(null)),
-                },
-              }));
-            });
-
-            firebase.database().ref(`rooms/${Number(currentRoom)}`).on('child_changed', (gameConfigSnapshot) => {
-              const gameConfig = gameConfigSnapshot;
-              this.setState(prevState => ({
-                ...prevState,
-                gameConfig: {
-                  ...prevState.gameConfig,
-                  [gameConfig.key]: gameConfig.val(),
-                },
-              }));
-            });
-
-            firebase.database().ref(`rooms/${Number(currentRoom)}`).on('child_added', (gameConfigSnapshot) => {
-              const gameConfig = gameConfigSnapshot;
-
-              this.setState(prevState => ({
-                ...prevState,
-                gameConfig: {
-                  ...prevState.gameConfig,
-                  [gameConfig.key]: gameConfig.val(),
-                },
-              }));
-            });
-
-            firebase.database().ref(`rooms/${Number(currentRoom)}/history`).on('child_removed', (gameConfigSnapshot) => {
-              this.setState(prevState => ({
-                ...prevState,
-                gameConfig: {
-                  ...prevState.gameConfig,
-                  history: [],
-                },
-              }));
-            });
-          }
+        await firebase.database().ref(`rooms/${currentRoom}`).update({
+          otherPlayerId: currentUserId,
+          O: currentUserId,
+          isLoading: false,
         });
+        await gameManager.setCurrentRoomId(currentRoom);
+        this.setState({
+          currentRoom,
+          gameConfig: gameConfigSnapshot,
+        });
+        this.setGameLoaderVisibility(false);
+        this.runGameListeners();
+        message.success('Successfully joined.');
+      }
+    }
+
+    logout = async () => {
+      await gameManager.clearAppStorage();
+
+      this.setState({
+        currentUserId: null,
+        isRegistered: false,
+        currentRoom: null,
       });
     }
 
-    updateGame = (willDispatchObject) => {
+    runGameListeners = async () => {
+      const currentRoom = await gameManager.getCurrentRoomId();
+      const currentUserId = await gameManager.getUserId();
+
+      if (currentUserId && currentRoom) {
+        this.setState({
+          currentUserId,
+          isRegistered: true,
+          currentRoom,
+        });
+
+        firebase.database().ref(`rooms/${Number(currentRoom)}`).once('value', (gameConfigSnapshot) => {
+          const gameConfig = gameConfigSnapshot.val();
+
+          this.setState(prevState => ({
+            ...prevState,
+            gameConfig: {
+              ...prevState.gameConfig,
+              ...gameConfig,
+              history: (gameConfig.history ? gameConfig.history : new Array(9).fill(null)),
+            },
+          }));
+        });
+
+        firebase.database().ref(`rooms/${Number(currentRoom)}`).on('child_changed', (gameConfigSnapshot) => {
+          const gameConfig = gameConfigSnapshot;
+          this.setState(prevState => ({
+            ...prevState,
+            gameConfig: {
+              ...prevState.gameConfig,
+              [gameConfig.key]: gameConfig.val(),
+            },
+          }));
+        });
+
+        firebase.database().ref(`rooms/${Number(currentRoom)}`).on('child_added', (gameConfigSnapshot) => {
+          const gameConfig = gameConfigSnapshot;
+
+          this.setState(prevState => ({
+            ...prevState,
+            gameConfig: {
+              ...prevState.gameConfig,
+              [gameConfig.key]: gameConfig.val(),
+            },
+          }));
+        });
+
+        firebase.database().ref(`rooms/${Number(currentRoom)}/history`).on('child_removed', () => {
+          this.setState(prevState => ({
+            ...prevState,
+            gameConfig: {
+              ...prevState.gameConfig,
+              history: [],
+            },
+          }));
+        });
+      }
+    }
+
+    updateGame = async (willDispatchObject) => {
       const { currentRoom } = this.state;
 
-      firebase.database().ref(`rooms/${Number(currentRoom)}`).update(willDispatchObject);
+      await firebase.database().ref(`rooms/${Number(currentRoom)}`).update(willDispatchObject);
+    }
+
+    setGameLoaderVisibility = (isLoading) => {
+      this.setState({
+        isLoading,
+      });
     }
 
     render() {

@@ -16,6 +16,7 @@ const Board = ({
       isMyTurn={isMyTurn}
       value={squares[index]}
       onClick={() => onClick(index)}
+      index={index}
     />
   );
 

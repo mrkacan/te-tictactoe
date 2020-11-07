@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Spin, Modal } from 'antd';
+import { Spin } from 'antd';
 import { calculateWinner } from '../../utils/helper';
 import Board from '../../components/Board';
 import Header from '../../components/Header';
@@ -27,7 +27,6 @@ class Game extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-
     return {
       ...props.gameConfig,
       isLoading: !props.gameConfig.nextPlayer,

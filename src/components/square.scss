@@ -1,0 +1,64 @@
+$borderColor: #2d1212;
+$borderWidth: 7px;
+$lineType: solid;
+
+.square {
+  float: left;
+  font-size: 13vw;
+  font-weight: 300 !important;
+  line-height: 25vw;
+  height: 25vw;
+  color: #c5c5c5;
+  padding: 0;
+  text-align: center;
+  width: 25vw;
+  background: transparent;
+}
+
+.squareIndex0 {
+  border: 0px;
+  border-right: $borderWidth $lineType $borderColor !important;
+  border-bottom: $borderWidth $lineType $borderColor !important;
+}
+
+.squareIndex1 {
+  border: 0px;
+  border-bottom: $borderWidth $lineType $borderColor !important;
+}
+
+.squareIndex2 {
+  border: 0px;
+  border-left: $borderWidth $lineType $borderColor !important;
+  border-bottom: $borderWidth $lineType $borderColor !important;
+}
+
+.squareIndex3 {
+  border: 0px;
+  border-right: $borderWidth $lineType $borderColor !important;
+}
+
+.squareIndex4 {
+  border: 0px;
+}
+
+.squareIndex5 {
+  border: 0px;
+  border-left: $borderWidth $lineType $borderColor !important;
+}
+
+.squareIndex6 {
+  border: 0px;
+  border-top: $borderWidth $lineType $borderColor !important;
+  border-right: $borderWidth $lineType $borderColor !important;
+}
+
+.squareIndex7 {
+  border: 0px;
+  border-top: $borderWidth $lineType $borderColor !important;
+}
+
+.squareIndex8 {
+  border: 0px;
+  border-top: $borderWidth $lineType $borderColor !important;
+  border-left: $borderWidth $lineType $borderColor !important;
+}
