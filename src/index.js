@@ -10,14 +10,6 @@ import firebase from 'firebase';
 const { Content } = Layout;
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDQtpaeFhvUUeUtUUxA4xlDaEzDiSo7fHc',
-  authDomain: 'te-tictactoe.firebaseapp.com',
-  databaseURL: 'https://te-tictactoe.firebaseio.com',
-  projectId: 'te-tictactoe',
-  storageBucket: 'te-tictactoe.appspot.com',
-  messagingSenderId: '478023561910',
-  appId: '1:478023561910:web:81e0297885e6397316ec17',
-  measurementId: 'G-LB8CWZC46J',
 };
 
 firebase.initializeApp(firebaseConfig);
